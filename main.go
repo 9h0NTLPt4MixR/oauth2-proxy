@@ -61,6 +61,8 @@ func main() {
 }
 
 // signalCtx returns a context that is cancelled on SIGINT or SIGTERM.
+// Note: both signals are handled so that graceful shutdown works whether
+// the process is stopped interactively (Ctrl-C) or by a process manager.
 func signalCtx() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	c := make(chan os.Signal, 1)
