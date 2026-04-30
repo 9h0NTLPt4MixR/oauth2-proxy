@@ -63,11 +63,14 @@ func main() {
 // signalCtx returns a context that is cancelled on SIGINT or SIGTERM.
 // Note: both signals are handled so that graceful shutdown works whether
 // the process is stopped interactively (Ctrl-C) or by a process manager.
+// The goroutine also watches ctx.Done() so it exits cleanly if the context
+// is cancelled by other means (e.g. in tests), avoiding a goroutine leak.
 func signalCtx() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
+		defer signal.Stop(c)
 		select {
 		case <-c:
 			cancel()
